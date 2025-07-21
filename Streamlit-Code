@@ -15,9 +15,9 @@ Original file is located at
 # import matplotlib.pyplot as plt
 # import seaborn as sns
 # import re
-# import joblib  # For saving/loading the model
+# import joblib
 # 
-# # Function to convert age interval to midpoint
+#
 # def convert_age_interval_to_midpoint(age_interval):
 #     if pd.isnull(age_interval):
 #         return np.nan
@@ -37,7 +37,7 @@ Original file is located at
 #     else:
 #         return np.nan
 # 
-# # Load the data and perform preprocessing
+# # Loading the data and preprocessing
 # @st.cache_data
 # def load_and_preprocess_data(filepath):
 #     df = pd.read_csv(filepath)
@@ -63,13 +63,11 @@ Original file is located at
 #     X = pd.get_dummies(X, columns=non_numeric_cols, drop_first=True)
 #     X.fillna(X.mean(), inplace=True)
 # 
-#     # Ensure column names are valid for XGBoost
 #     X.columns = ["".join (c if c.isalnum() else "_" for c in str(x)) for x in X.columns]
 # 
 #     return X, y_binary, df # Return the original dataframe as well for analysis/visualizations
 # 
-# 
-# # Train the model
+# # Training the model
 # @st.cache_resource
 # def train_model(X, y_binary):
 #     from sklearn.model_selection import train_test_split
@@ -79,15 +77,13 @@ Original file is located at
 #     xgb_clf_binary = xgb.XGBClassifier(objective='binary:logistic', random_state=42)
 #     xgb_clf_binary.fit(X_train_binary, y_train_binary)
 # 
-#     # Save the trained model and test data for later use in prediction section
 #     joblib.dump(xgb_clf_binary, 'xgb_model_binary.pkl')
 #     X_test_binary.to_csv('X_test_binary.csv', index=False)
 #     pd.DataFrame(y_test_binary).to_csv('y_test_binary.csv', index=False)
 # 
 #     return xgb_clf_binary, X_test_binary, y_test_binary
 # 
-# 
-# # Load the trained model and test data
+# # Loading the trained model and testing data
 # @st.cache_resource
 # def load_model_and_test_data():
 #     model = joblib.load('xgb_model_binary.pkl')
@@ -95,14 +91,12 @@ Original file is located at
 #     y_test = pd.read_csv('y_test_binary.csv')['readmitted_binary']
 #     return model, X_test, y_test
 # 
-# # Function to predict risk for a new patient (using the trained model structure)
 # def predict_risk(model, preprocessed_patient_data, feature_columns):
 #     # Ensure the input data has the same columns and order as the training data
 #     input_df = pd.DataFrame([preprocessed_patient_data])
 #     input_df = input_df.reindex(columns=feature_columns, fill_value=0)
 #     proba = model.predict_proba(input_df)[:, 1]
 #     return proba[0]
-# 
 # 
 # # Streamlit App
 # st.title("Diabetic Patient Readmission Risk Predictor")
@@ -122,8 +116,7 @@ Original file is located at
 #     y_binary = st.session_state['y_binary']
 #     df = st.session_state['df']
 # 
-# 
-# # Train model
+# # Training model
 # if not st.session_state.get('model_trained'):
 #     with st.spinner("Training the model..."):
 #         xgb_clf_binary, X_test_binary, y_test_binary = train_model(X, y_binary)
@@ -137,9 +130,7 @@ Original file is located at
 #     X_test_binary = st.session_state['X_test']
 #     y_test_binary = st.session_state['y_test']
 # 
-# 
-# # --- Dashboard Sections ---
-# 
+# #Dashboard Configuration
 # st.sidebar.header("Navigation")
 # section = st.sidebar.radio("Go to", ["Overview", "Data Analysis", "Model Evaluation", "Patient Risk Prediction", "Recommendations"])
 # 
@@ -181,7 +172,6 @@ Original file is located at
 #     plt.suptitle('Histograms of Key Numerical Features', y=1.02)
 #     plt.tight_layout()
 #     st.pyplot(fig[0][0].get_figure()) # Display the figure containing all subplots
-# 
 # 
 # elif section == "Model Evaluation":
 #     st.header("Model Evaluation - Binary Classification")
@@ -225,7 +215,6 @@ Original file is located at
 #             ax.legend(loc="lower right")
 #             st.pyplot(fig)
 # 
-# 
 # elif section == "Patient Risk Prediction":
 #     st.header("Predict Readmission Risk for a Patient")
 # 
@@ -244,23 +233,17 @@ Original file is located at
 #     race = st.selectbox("Race", ['Caucasian', 'AfricanAmerican', 'Hispanic', 'Asian', 'Other'])
 #     admission_type = st.selectbox("Admission Type", ['Emergency', 'Urgent', 'Elective', 'Newborn', 'Not Available', 'Null', 'Not Mapped', 'Trauma Center'])
 # 
-# 
 #     if st.button("Predict Risk"):
-#         # Create a dictionary with the input features, mimicking the processed data structure
-#         # Initialize with zeros for all expected columns
 #         patient_data = {col: 0 for col in feature_columns}
 # 
-#         # Populate with user inputs
 #         patient_data['time_in_hospital'] = time_in_hospital
 #         patient_data['num_lab_procedures'] = num_lab_procedures
 #         patient_data['num_medications'] = num_medications
 #         patient_data['number_diagnoses'] = number_diagnoses
-#         patient_data['age_midpoint'] = convert_age_interval_to_midpoint(age_group) # Convert age group to midpoint
+#         patient_data['age_midpoint'] = convert_age_interval_to_midpoint(age_group) 
 # 
-#         # Handle one-hot encoded categorical features
 #         if gender == 'Male':
 #             patient_data['gender_Male'] = 1
-#         # Handle gender_Unknown/Invalid if it exists in trained features
 #         if 'gender_Unknown/Invalid' in feature_columns and gender not in ['Female', 'Male']:
 #              patient_data['gender_Unknown/Invalid'] = 1
 # 
@@ -269,8 +252,7 @@ Original file is located at
 #             if race_col_name in feature_columns:
 #                  patient_data[race_col_name] = 1
 # 
-#         if admission_type != 'Emergency': # Emergency might be the dropped first category, check trained columns
-#              # Need to map the user-friendly names to the actual column names used after get_dummies
+#         if admission_type != 'Emergency':
 #              admission_type_mapping = {
 #                  'Urgent': 'admission_type_id_2',
 #                  'Elective': 'admission_type_id_3',
@@ -284,25 +266,17 @@ Original file is located at
 #              if admission_col_name and admission_col_name in feature_columns:
 #                   patient_data[admission_col_name] = 1
 # 
-# 
-#         # Ensure other numerical features are also included with default values if not specified
-#         # For simplicity, we'll assume 0 for many not explicitly asked, this might need refinement
-#         # based on which features are important from the model
-#         # Example: if 'num_procedures' is important, add an input for it.
-# 
 #         with st.spinner("Predicting..."):
-#             # Use the loaded model and the feature columns from training data
 #             model_loaded, _, _ = load_model_and_test_data()
 #             prediction_proba = predict_risk(model_loaded, patient_data, feature_columns)
 #             st.subheader("Prediction Result:")
 #             st.write(f"The predicted probability of readmission within 30 days is: **{prediction_proba:.2f}**")
 # 
-#             risk_threshold = 0.3 # Use the same threshold as in the original notebook
+#             risk_threshold = 0.3
 #             if prediction_proba >= risk_threshold:
 #                 st.warning(f"This patient is identified as **High Risk** (Probability >= {risk_threshold:.2f}).")
 #             else:
 #                 st.info(f"This patient is identified as **Lower Risk** (Probability < {risk_threshold:.2f}).")
-# 
 # 
 # elif section == "Recommendations":
 #     st.header("Hospital Recommendations")
@@ -321,8 +295,6 @@ Original file is located at
 # # Add a footer
 # st.sidebar.markdown("---")
 # st.sidebar.markdown("Created using Streamlit")
-#
-
 
 
 !streamlit run app.py & npx localtunnel --port 8501
@@ -337,9 +309,6 @@ from pyngrok import ngrok
 import os
 from google.colab import userdata
 
-# Get your ngrok authtoken from Colab secrets
-# If you don't have one, you can sign up at ngrok.com and get one.
-# Add it to Colab secrets with the name 'NGROK_AUTH_TOKEN'
 try:
     NGROK_AUTH_TOKEN = userdata.get('NGROK_AUTH_TOKEN')
 except Exception as e:
@@ -351,16 +320,12 @@ if NGROK_AUTH_TOKEN:
     print("ngrok authtoken set.")
 else:
     print("NGROK_AUTH_TOKEN secret not found. Please add it to Colab secrets to authenticate ngrok.")
-    # Raise an error or exit if the token is mandatory
-    # For now, we'll let the ngrok.connect potentially fail with an auth error if token is missing
-    # raise ValueError("NGROK_AUTH_TOKEN not set. Please add it to Colab secrets.") # Uncomment to make it mandatory
 
 # Terminate any existing ngrok tunnels
 ngrok.kill()
 
-# Start a new ngrok tunnel for Streamlit's default port 8501
+# Start a new ngrok tunnel for the Streamlit default port of 8501
 print("Starting ngrok tunnel...")
-# Use connect with the port. This will fail if auth is required and not set.
 try:
     public_url = ngrok.connect(8501).public_url
     print(f"ngrok tunnel established at: {public_url}")
@@ -370,25 +335,14 @@ except Exception as e:
     public_url = None # Set public_url to None if connection fails
 
 
-# Run the Streamlit app in a separate cell
-# This command will block until the Streamlit app is stopped.
-# The ngrok tunnel will remain active as long as the ngrok connect cell is running.
-# The streamlit run command should be in a separate cell to keep the ngrok tunnel alive
-
-# The original code had the streamlit run command here, moving it to a separate cell W1rhHfb-dswT
 # !streamlit run app.py --server.port 8501 --server.enableCORS false --server.enableXsrfProtection false
 
-# Commented out IPython magic to ensure Python compatibility.
 # This cell runs the streamlit app after the ngrok tunnel is established
-# Change directory to /content where app.py is saved
 # %cd /content
-# Add commands to check the current directory and list files
 !pwd
 !ls
 
 !streamlit run app.py --server.port 8501 --server.enableCORS false --server.enableXsrfProtection false
-
-
 
 !pip install streamlit -q
 
